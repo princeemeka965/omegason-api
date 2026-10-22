@@ -21,10 +21,26 @@ if (!databaseUrl.startsWith('postgres')) {
 
 const production = process.env.NODE_ENV === 'production'
 
-const clientOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+// The browser sends the page's origin with no trailing slash. A value that is
+// only in CLIENT_ORIGIN is added too, so a Netlify preview URL can be allowed
+// without removing the public site.
+const builtinOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://omegason.netlify.app',
+  'https://www.omegasonenergy.org',
+  'https://omegasonenergy.org',
+]
+
+const clientOrigins = [
+  ...new Set([
+    ...builtinOrigins,
+    ...(process.env.CLIENT_ORIGIN || '')
+      .split(',')
+      .map((origin) => origin.trim().replace(/\/+$/, ''))
+      .filter(Boolean),
+  ]),
+]
 
 export const config = {
   root,

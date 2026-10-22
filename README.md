@@ -21,7 +21,7 @@ Local sign-in, until you change `.env`:
 
 `OTP_REVEAL=true` returns the one-time code in the login response. Set it to `false` once a mail service sends the code.
 
-The website reads the API address from `VITE_API_URL`. Locally that is `http://localhost:5050`. On Netlify, set `VITE_API_URL` to this service's public URL and set `CLIENT_ORIGIN` here to the Netlify site URL.
+The website reads the API address from `VITE_API_URL`. Locally that is `http://localhost:5050`. On Netlify, set `VITE_API_URL` to this service's public URL. `https://www.omegasonenergy.org`, `https://omegasonenergy.org`, and local Vite are allowed without `CLIENT_ORIGIN`. If the site is opened from a Netlify address, add that exact origin to `CLIENT_ORIGIN` on Render and redeploy.
 
 ## Routes
 
