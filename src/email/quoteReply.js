@@ -11,7 +11,14 @@ import { emailRichText, richTextToPlain } from '../lib/html.js'
 function intro({ kind, productName }) {
   if (kind === 'product' && productName) return `Here is our reply to your quote request for ${productName}.`
   if (kind === 'product') return 'Here is our reply to your quote request.'
+  if (kind === 'general') return 'Here is our reply to your message.'
   return 'Here is our reply to your solar sizing request.'
+}
+
+function labelFor(kind) {
+  if (kind === 'product') return 'Quote request'
+  if (kind === 'general') return 'Contact'
+  return 'Solar sizing'
 }
 
 export function quoteReplyText({ name, reply, kind, productName }) {
@@ -24,13 +31,13 @@ export function quoteReplyText({ name, reply, kind, productName }) {
     '',
     richTextToPlain(reply),
     '',
-    'You can also call +234 7034867694.',
+    'You can also call +234 806 249 8123.',
   ].join('\n')
 }
 
 export function quoteReplyHtml({ name, reply, kind, productName, imageSrc }) {
   const body = emailRichText(reply)
-  const label = kind === 'product' ? 'Quote request' : 'Solar sizing'
+  const label = labelFor(kind)
   const product = kind === 'product' && imageSrc
     ? `<div style="margin:20px 0 0;border:1px solid #e3e7ee;">
                   <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(productName || 'Product')}" width="462" style="display:block;width:100%;max-width:462px;height:auto;border:0;">
@@ -56,7 +63,7 @@ export function quoteReplyHtml({ name, reply, kind, productName, imageSrc }) {
                 <p style="margin:16px 0 0;font-size:15px;line-height:1.6;">${escapeHtml(intro({ kind, productName }))}</p>
                 ${product}
                 ${body}
-                <p style="margin:24px 0 0;font-size:14px;line-height:1.6;color:#5c6775;">You can also call +234 7034867694.</p>
+                <p style="margin:24px 0 0;font-size:14px;line-height:1.6;color:#5c6775;">You can also call +234 806 249 8123.</p>
               </td>
             </tr>
           </table>

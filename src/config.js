@@ -54,6 +54,7 @@ export const config = {
   revealOtp: process.env.OTP_REVEAL !== 'false',
   resendApiKey: String(process.env.RESEND_API_KEY || '').trim(),
   resendFrom: String(process.env.RESEND_FROM || '').trim(),
+  contactInbox: String(process.env.CONTACT_INBOX || 'omegasonenergy@gmail.com').trim().toLowerCase(),
   cloudinaryCloudName: String(process.env.CLOUDINARY_CLOUD_NAME || '').trim(),
   cloudinaryApiKey: String(process.env.CLOUDINARY_API_KEY || '').trim(),
   cloudinaryApiSecret: String(process.env.CLOUDINARY_API_SECRET || '').trim(),

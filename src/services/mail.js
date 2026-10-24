@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { config } from '../config.js'
 import { accountChangeHtml, accountChangeText } from '../email/accountChange.js'
+import { contactMessageHtml, contactMessageText } from '../email/contactMessage.js'
 import { quoteReplyHtml, quoteReplyText } from '../email/quoteReply.js'
 import { ApiError } from '../errors.js'
 
@@ -46,6 +47,26 @@ export async function sendQuoteReply({ to, name, reply, subject, kind, productNa
   if (error) {
     console.error(error)
     throw new ApiError(424, 'The reply is saved. The email did not go out. Check the Resend key and from address, then send it again.')
+  }
+}
+
+export async function sendContactMessage({ name, email, subject, message }) {
+  if (!mailConfigured()) {
+    throw new ApiError(424, 'Add RESEND_API_KEY and RESEND_FROM to the API environment, then try again.')
+  }
+  const content = { name, email, subject, message }
+  const resend = new Resend(config.resendApiKey)
+  const { error } = await resend.emails.send({
+    from: config.resendFrom,
+    to: config.contactInbox,
+    replyTo: email,
+    subject: `Contact: ${subject}`,
+    html: contactMessageHtml(content),
+    text: contactMessageText(content),
+  })
+  if (error) {
+    console.error(error)
+    throw new ApiError(424, 'The message is saved. The email did not go out. Check the Resend key and from address.')
   }
 }
 

@@ -4,7 +4,8 @@ import { sanitizeRichText } from '../lib/html.js'
 import { isEmail, plainText } from '../lib/text.js'
 import { Product, Quote, Setting } from '../models.js'
 import { presentQuote } from '../present.js'
-import { sendQuoteReply } from './mail.js'
+import { config } from '../config.js'
+import { sendContactMessage, sendQuoteReply } from './mail.js'
 
 const QUOTES_KEY = 'quotesEmail'
 
@@ -58,8 +59,15 @@ export async function addQuote(input) {
   const message = String(input.message || '').trim()
   const productSlug = String(input.productSlug || '').trim()
   let productName = String(input.productName || '').trim()
-  if (!name || !isEmail(email) || !isNigerianState(state) || !subject || !message) {
+  if (!name || !isEmail(email) || !subject || !message) {
+    throw new ApiError(400, 'Enter your name, email, subject, and message.')
+  }
+  const needsState = Boolean(productSlug) || input.kind === 'sizing'
+  if (needsState && !isNigerianState(state)) {
     throw new ApiError(400, 'Enter your name, email, state, subject, and message.')
+  }
+  if (state && !isNigerianState(state)) {
+    throw new ApiError(400, 'Choose a state.')
   }
   if (String(input.phone || '').trim() && !phone) {
     throw new ApiError(400, 'Enter a phone number with 10 to 15 digits.')
@@ -74,7 +82,7 @@ export async function addQuote(input) {
     productImage = product?.image || null
   }
   const kind = productSlug ? 'product' : (input.kind === 'sizing' ? 'sizing' : 'general')
-  const destinationEmail = (await getQuotesEmail()) || null
+  const destinationEmail = kind === 'general' ? config.contactInbox : ((await getQuotesEmail()) || null)
   const quote = await Quote.create({
     name: name.slice(0, 160),
     email: email.slice(0, 160).toLowerCase(),
@@ -89,6 +97,18 @@ export async function addQuote(input) {
     read: false,
     destinationEmail,
   })
+  if (kind === 'general') {
+    try {
+      await sendContactMessage({
+        name: quote.name,
+        email: quote.email,
+        subject: quote.subject,
+        message: quote.message,
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
   return presentQuote(quote)
 }
 
@@ -103,8 +123,8 @@ export async function markQuoteRead(id) {
 export async function replyToQuote(id, input) {
   const quote = await Quote.findByPk(id)
   if (!quote) throw new ApiError(404, 'That quote request was not found.')
-  if (quote.kind !== 'sizing' && quote.kind !== 'product') {
-    throw new ApiError(400, 'Replies are for product and solar sizing requests.')
+  if (quote.kind !== 'sizing' && quote.kind !== 'product' && quote.kind !== 'general') {
+    throw new ApiError(400, 'This request cannot be answered by email.')
   }
   const reply = sanitizeRichText(input?.message)
   const length = plainText(reply).length
