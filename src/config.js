@@ -28,6 +28,8 @@ const builtinOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://omegason.netlify.app',
+  'https://omegason.org',
+  'https://www.omegason.org',
   'https://www.omegasonenergy.org',
   'https://omegasonenergy.org',
 ]
